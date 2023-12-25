@@ -1,4 +1,6 @@
 import sqlite3
+from datetime import datetime
+
 import fastapi
 import tomli
 import uvicorn
@@ -16,7 +18,7 @@ def launch_server():
 
 
 @app.post('/metrics')
-def insert_ur_data_to_db():
+def insert_ur_data_to_db(request: dict):
 
     def connect_to_db():
 
@@ -34,12 +36,19 @@ def insert_ur_data_to_db():
 
     db_conn, cursor = connect_to_db()
 
-    # test
+    insert_query = f"""
+        INSERT INTO agent
+        (agent_id, agent_ip, agent_port, timestamp, agent_group, agent_password, controller_id)
+        VALUES ("{request['agent_id']}", "{request['agent_ip']}", {request['agent_port']},
+        "{datetime.now().strftime("%d/%m/%Y %H:%M:%S")}", "{request['agent_group']}",
+        "{request['agent_password']}", {request['controller_id']});"""
+    cursor.execute(insert_query)
+
     print("START TEST")
     test_query = "SELECT * FROM agent"
     cursor.execute(test_query)
     result = cursor.fetchall()
-    print(f'{format(result)}')
+    print(format(result))
 
 
 def main():
